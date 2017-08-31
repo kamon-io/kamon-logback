@@ -22,7 +22,6 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.classic.spi.{ILoggingEvent, LoggingEvent}
 import ch.qos.logback.classic.{AsyncAppender, Level, LoggerContext}
 import ch.qos.logback.core.Appender
-import ch.qos.logback.core.status.OnConsoleStatusListener
 import ch.qos.logback.core.util.OptionHelper
 import kamon.logback.util.LogbackConfigurator
 import org.slf4j.impl.StaticLoggerBinder
@@ -30,14 +29,8 @@ import org.slf4j.impl.StaticLoggerBinder
 package object logback {
 
   val context: LoggerContext = StaticLoggerBinder.getSingleton.getLoggerFactory.asInstanceOf[LoggerContext]
-  val onConsoleStatusListener = new OnConsoleStatusListener()
-  onConsoleStatusListener.setContext(context)
-  context.getStatusManager.add(onConsoleStatusListener)
-
   val configurator = new LogbackConfigurator(context)
   configurator.conversionRule("traceID", classOf[kamon.logback.LogbackTraceIDConverter])
-
-  onConsoleStatusListener.start()
 
   def buildMemoryAppender(config: LogbackConfigurator): LogbackMemoryAppender = {
     val appender = new LogbackMemoryAppender()
