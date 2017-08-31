@@ -16,29 +16,89 @@
 
 package kamon.logback.instrumentation
 
+import java.util.concurrent.Callable
+
 import kamon.Kamon
-import kamon.context.{Context, HasContext}
-import org.aspectj.lang.ProceedingJoinPoint
-import org.aspectj.lang.annotation._
+import kamon.agent.libs.net.bytebuddy.asm.Advice.{Argument, OnMethodExit}
+import kamon.agent.libs.net.bytebuddy.implementation.bind.annotation
+import kamon.agent.libs.net.bytebuddy.implementation.bind.annotation.{RuntimeType, SuperCall}
+import kamon.agent.scala.KamonInstrumentation
+import kamon.context.Context
 
 import scala.beans.BeanProperty
 
-@Aspect
-class AsyncAppenderInstrumentation {
+class AsyncAppenderInstrumentation extends KamonInstrumentation {
 
-  @DeclareMixin("ch.qos.logback.classic.spi.ILoggingEvent+")
-  def mixinHasContinuationToRequestHeader: ContextAwareLoggingEvent =
-    new ContextAwareLoggingEvent{}
+  /**
+    * Mix:
+    *
+    * ch.qos.logback.classic.spi.ILoggingEvent with kamon.logback.mixin.ContextAwareLoggingEvent
+    *
+    */
+  forSubtypeOf("ch.qos.logback.classic.spi.ILoggingEvent") { builder =>
+    builder
+      .withMixin(classOf[ContextAwareLoggingEventMixin])
+      .build()
+  }
 
-  @Before("execution(* ch.qos.logback.core.AsyncAppenderBase.append(..)) && args(event)")
-  def onAppend(event:ContextAwareLoggingEvent): Unit =
-    event.setContext(Kamon.currentContext())
 
-  @Around("execution(* ch.qos.logback.core.spi.AppenderAttachableImpl.appendLoopOnAppenders(..)) && args(event)")
-  def onAppendLoopOnAppenders(pjp: ProceedingJoinPoint, event:ContextAwareLoggingEvent): Any =
-    Kamon.withContext(event.getContext)(pjp.proceed())
+  /**
+    * Instrument:
+    *
+    * ch.qos.logback.core.AsyncAppenderBase::append
+    *
+    */
+  forTargetType("ch.qos.logback.core.AsyncAppenderBase") { builder =>
+    builder
+      .withAdvisorFor(named("append"), classOf[AppendMethodAdvisor])
+      .build()
+  }
+
+  /**
+    * Instrument:
+    *
+    * ch.qos.logback.core.spi.AppenderAttachableImpl::appendLoopOnAppenders
+    *
+    */
+  forTargetType("ch.qos.logback.core.spi.AppenderAttachableImpl") { builder =>
+    builder
+      .withTransformationFor(named("appendLoopOnAppenders"), classOf[AppendLoopMethodInterceptor])
+      .build()
+  }
 }
 
-trait ContextAwareLoggingEvent extends HasContext {
+/**
+  * Mixin for ch.qos.logback.classic.spi.ILoggingEvent
+  */
+
+trait ContextAwareLoggingEvent {
+  def getContext: Context
+  def setContext(context:Context):Unit
+}
+
+class ContextAwareLoggingEventMixin extends ContextAwareLoggingEvent {
   @volatile @BeanProperty var context:Context = _
 }
+
+/**
+  * Advisor for ch.qos.logback.core.AsyncAppenderBase::append
+  */
+class AppendMethodAdvisor
+object AppendMethodAdvisor {
+
+  @OnMethodExit
+  def onExit(@Argument(0) event:AnyRef): Unit =
+    event.asInstanceOf[ContextAwareLoggingEvent].setContext(Kamon.currentContext())
+}
+
+/**
+  * Interceptor for ch.qos.logback.core.spi.AppenderAttachableImpl::appendLoopOnAppenders
+  */
+class AppendLoopMethodInterceptor
+object AppendLoopMethodInterceptor {
+
+  @RuntimeType
+  def aroundLog(@SuperCall callable: Callable[AnyRef], @annotation.Argument(0) event:AnyRef): Any =
+    Kamon.withContext(event.asInstanceOf[ContextAwareLoggingEvent].getContext)(callable.call())
+}
+
