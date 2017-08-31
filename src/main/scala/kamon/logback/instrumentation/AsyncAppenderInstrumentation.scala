@@ -33,7 +33,6 @@ class AsyncAppenderInstrumentation extends KamonInstrumentation {
     * Mix:
     *
     * ch.qos.logback.classic.spi.ILoggingEvent with kamon.logback.mixin.ContextAwareLoggingEvent
-    *
     */
   forSubtypeOf("ch.qos.logback.classic.spi.ILoggingEvent") { builder =>
     builder
@@ -46,7 +45,6 @@ class AsyncAppenderInstrumentation extends KamonInstrumentation {
     * Instrument:
     *
     * ch.qos.logback.core.AsyncAppenderBase::append
-    *
     */
   forTargetType("ch.qos.logback.core.AsyncAppenderBase") { builder =>
     builder
@@ -58,7 +56,6 @@ class AsyncAppenderInstrumentation extends KamonInstrumentation {
     * Instrument:
     *
     * ch.qos.logback.core.spi.AppenderAttachableImpl::appendLoopOnAppenders
-    *
     */
   forTargetType("ch.qos.logback.core.spi.AppenderAttachableImpl") { builder =>
     builder
@@ -70,7 +67,6 @@ class AsyncAppenderInstrumentation extends KamonInstrumentation {
 /**
   * Mixin for ch.qos.logback.classic.spi.ILoggingEvent
   */
-
 trait ContextAwareLoggingEvent {
   def getContext: Context
   def setContext(context:Context):Unit
@@ -98,7 +94,7 @@ class AppendLoopMethodInterceptor
 object AppendLoopMethodInterceptor {
 
   @RuntimeType
-  def aroundLog(@SuperCall callable: Callable[AnyRef], @annotation.Argument(0) event:AnyRef): Any =
+  def aroundAppendLoop(@SuperCall callable: Callable[Int], @annotation.Argument(0) event:AnyRef): Int =
     Kamon.withContext(event.asInstanceOf[ContextAwareLoggingEvent].getContext)(callable.call())
 }
 
