@@ -4,6 +4,9 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.kamon/kamon-logback_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.kamon/kamon-logback_2.12)
 
 
+The <b>kamon-logback</b> module require you to start your application using the AspectJ Weaver Agent.
+
+
 ### Getting Started
 
 Kamon Logback is currently available for Scala 2.10, 2.11 and 2.12.
