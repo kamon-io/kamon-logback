@@ -46,9 +46,7 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
           memoryAppender.doAppend(createLoggingEvent(context))
         }
 
-        eventually(timeout(2 seconds)) {
-          memoryAppender.asInstanceOf[LogbackMemoryAppender].getLastLine shouldBe traceID.string
-        }
+        memoryAppender.getLastLine shouldBe traceID.string
       }
 
       "report the its context using an AsyncAppender" in {
@@ -65,7 +63,7 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
         }
 
         eventually(timeout(2 seconds)) {
-          memoryAppender.asInstanceOf[LogbackMemoryAppender].getLastLine shouldBe traceID.string
+          memoryAppender.getLastLine shouldBe traceID.string
         }
       }
     }
