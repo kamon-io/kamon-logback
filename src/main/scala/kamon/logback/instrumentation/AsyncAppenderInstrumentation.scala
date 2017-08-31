@@ -49,7 +49,7 @@ class AsyncAppenderInstrumentation extends KamonInstrumentation {
     */
   forTargetType("ch.qos.logback.core.AsyncAppenderBase") { builder =>
     builder
-      .withAdvisorFor(named("append"), classOf[AppendMethodAdvisor])
+      .withAdvisorFor(method("append"), classOf[AppendMethodAdvisor])
       .build()
   }
 
@@ -60,7 +60,7 @@ class AsyncAppenderInstrumentation extends KamonInstrumentation {
     */
   forTargetType("ch.qos.logback.core.spi.AppenderAttachableImpl") { builder =>
     builder
-      .withTransformationFor(named("appendLoopOnAppenders"), classOf[AppendLoopMethodInterceptor])
+      .withInterceptorFor(method("appendLoopOnAppenders"), classOf[AppendLoopMethodInterceptor])
       .build()
   }
 }

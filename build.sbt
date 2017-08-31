@@ -15,7 +15,7 @@
 
 val kamonCore             = "io.kamon"        %%  "kamon-core"              % "1.0.0-RC1"
 val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"           % "1.0.0-RC1"
-val kamonAgentExtension   = "io.kamon"        %%  "agent-scala-extension"   % "0.0.3-experimental"
+val kamonAgentExtension   = "io.kamon"        %%  "agent-scala-extension"   % "0.0.5-experimental"
 val latestLogbackClassic  = "ch.qos.logback"  %   "logback-classic"         % "1.2.3"
 
 lazy val root = (project in file("."))
@@ -23,7 +23,7 @@ lazy val root = (project in file("."))
       name := "kamon-logback",
       scalaVersion := "2.12.3"))
   .enablePlugins(JavaAgent)
-  .settings(javaAgents += "io.kamon" % "kamon-agent" % "0.0.3-experimental" % "compile;runtime;test")
+  .settings(javaAgents += "io.kamon" % "kamon-agent" % "0.0.5-experimental" % "compile;runtime;test")
   .settings(
     libraryDependencies ++=
       compileScope(kamonCore, latestLogbackClassic, kamonAgentExtension) ++
