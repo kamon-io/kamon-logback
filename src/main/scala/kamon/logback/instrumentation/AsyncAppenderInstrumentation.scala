@@ -17,7 +17,7 @@
 package kamon.logback.instrumentation
 
 import kamon.Kamon
-import kamon.context.{Context, HasContext}
+import kamon.context.Context
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation._
 
@@ -27,8 +27,8 @@ import scala.beans.BeanProperty
 class AsyncAppenderInstrumentation {
 
   @DeclareMixin("ch.qos.logback.classic.spi.ILoggingEvent+")
-  def mixinHasContinuationToRequestHeader: ContextAwareLoggingEvent =
-    new ContextAwareLoggingEvent{}
+  def mixinContextAwareLoggingToLoggingEvent: ContextAwareLoggingEvent =
+    ContextAwareLoggingEvent()
 
   @Before("execution(* ch.qos.logback.core.AsyncAppenderBase.append(..)) && args(event)")
   def onAppend(event:ContextAwareLoggingEvent): Unit =
@@ -39,6 +39,14 @@ class AsyncAppenderInstrumentation {
     Kamon.withContext(event.getContext)(pjp.proceed())
 }
 
-trait ContextAwareLoggingEvent extends HasContext {
-  @volatile @BeanProperty var context:Context = _
+
+trait ContextAwareLoggingEvent {
+  def getContext: Context
+  def setContext(context:Context):Unit
+}
+
+object ContextAwareLoggingEvent  {
+  def apply() = new ContextAwareLoggingEvent {
+    @volatile @BeanProperty var context: Context = Kamon.currentContext()
+  }
 }
