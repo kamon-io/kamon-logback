@@ -13,17 +13,18 @@
  * =========================================================================================
  */
 
-val kamonCore             = "io.kamon"        %%  "kamon-core"      % "1.0.0-RC1"
-val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"   % "1.0.0-RC1"
+val kamonCore             = "io.kamon"        %%  "kamon-core"      % "1.0.0-RC4"
+val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"   % "1.0.0-RC4"
 val latestLogbackClassic  = "ch.qos.logback"  %   "logback-classic" % "1.2.3"
 
 lazy val root = (project in file("."))
   .settings(Seq(
+      isSnapshot := true,
       name := "kamon-logback",
       scalaVersion := "2.12.3"))
-  .enablePlugins(JavaAgent)
-  .settings(javaAgents += "org.aspectj" % "aspectjweaver"  % "1.8.10"  % "compile;test;runtime")
+  .settings(aspectJSettings: _*)
   .settings(
     libraryDependencies ++=
       compileScope(kamonCore, latestLogbackClassic) ++
+      providedScope(aspectJ) ++
       testScope(kamonTestkit, scalatest))
