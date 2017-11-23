@@ -17,6 +17,8 @@ val kamonCore             = "io.kamon"        %%  "kamon-core"      % "1.0.0-RC4
 val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"   % "1.0.0-RC4"
 val latestLogbackClassic  = "ch.qos.logback"  %   "logback-classic" % "1.2.3"
 
+resolvers += Resolver.bintrayRepo("kamon-io", "snapshots")
+
 lazy val root = (project in file("."))
   .settings(Seq(
       isSnapshot := true,
