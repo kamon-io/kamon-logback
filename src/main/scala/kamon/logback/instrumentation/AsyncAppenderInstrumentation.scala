@@ -19,7 +19,7 @@ package kamon.logback.instrumentation
 import java.util.concurrent.Callable
 
 import kamon.Kamon
-import kamon.agent.api.instrumentation.Initializer
+import kamon.agent.api.instrumentation.mixin.Initializer
 import kamon.agent.libs.net.bytebuddy.asm.Advice.{Argument, OnMethodExit}
 import kamon.agent.libs.net.bytebuddy.implementation.bind.annotation
 import kamon.agent.libs.net.bytebuddy.implementation.bind.annotation.{RuntimeType, SuperCall}
