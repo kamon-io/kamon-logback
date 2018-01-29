@@ -13,8 +13,8 @@
  * =========================================================================================
  */
 
-val kamonCore             = "io.kamon"        %%  "kamon-core"              % "1.0.0-RC1"
-val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"           % "1.0.0-RC1"
+val kamonCore             = "io.kamon"        %%  "kamon-core"              % "1.0.0"
+val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"           % "1.0.0"
 val kamonAgentExtension   = "io.kamon"        %%  "agent-scala-extension"   % "0.0.8-experimental"
 val latestLogbackClassic  = "ch.qos.logback"  %   "logback-classic"         % "1.2.3"
 
