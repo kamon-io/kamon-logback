@@ -1,6 +1,6 @@
 /*
  * =========================================================================================
- * Copyright © 2013-2017 the kamon project <http://kamon.io/>
+ * Copyright © 2013-2018 the kamon project <http://kamon.io/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -14,44 +14,18 @@
  * =========================================================================================
  */
 
-package kamon.logback.instrumentation
+package kamon.logback.instrumentation.aspectj
 
-
-import com.typesafe.config.Config
-import kamon.{Kamon, OnReconfigureHook}
+import kamon.Kamon
 import kamon.context.Context
+import kamon.logback.instrumentation.{ContextAwareLoggingEvent, Logback}
 import kamon.trace.{IdentityProvider, Span}
 import org.aspectj.lang.ProceedingJoinPoint
-import org.aspectj.lang.annotation._
+import org.aspectj.lang.annotation.{Around, Aspect, Before, DeclareMixin}
 import org.slf4j.MDC
 
 import scala.beans.BeanProperty
 
-object AsyncAppenderInstrumentation {
-
-  @volatile private var _mdcContextPropagation: Boolean = true
-  @volatile private var _mdcTraceKey: String = "kamonTraceID"
-  @volatile private var _mdcSpanKey: String = "kamonSpanID"
-
-  def mdcTraceKey: String = _mdcTraceKey
-  def mdcSpanKey: String = _mdcSpanKey
-  def mdcContextPropagation: Boolean = _mdcContextPropagation
-
-  loadConfiguration(Kamon.config())
-
-  Kamon.onReconfigure(new OnReconfigureHook {
-    override def onReconfigure(newConfig: Config): Unit =
-      AsyncAppenderInstrumentation.loadConfiguration(newConfig)
-  })
-
-
-  private def loadConfiguration(config: Config): Unit = synchronized {
-    val logbackConfig = config.getConfig("kamon.logback")
-    _mdcContextPropagation = logbackConfig.getBoolean("mdc-context-propagation")
-    _mdcTraceKey = logbackConfig.getString("mdc-trace-id-key")
-    _mdcSpanKey = logbackConfig.getString("mdc-span-id-key")
-  }
-}
 @Aspect
 class AsyncAppenderInstrumentation {
 
@@ -72,25 +46,19 @@ class AsyncAppenderInstrumentation {
 
     val context = Kamon.currentContext().get(Span.ContextKey)
 
-    if (context.context().traceID != IdentityProvider.NoIdentifier && AsyncAppenderInstrumentation.mdcContextPropagation){
-      MDC.put(AsyncAppenderInstrumentation.mdcTraceKey, context.context().traceID.string)
-      MDC.put(AsyncAppenderInstrumentation.mdcSpanKey, context.context().spanID.string)
+    if (context.context().traceID != IdentityProvider.NoIdentifier && Logback.mdcContextPropagation){
+      MDC.put(Logback.mdcTraceKey, context.context().traceID.string)
+      MDC.put(Logback.mdcSpanKey, context.context().spanID.string)
       try {
         pjp.proceed()
       } finally {
-        MDC.remove(AsyncAppenderInstrumentation.mdcTraceKey)
-        MDC.remove(AsyncAppenderInstrumentation.mdcSpanKey)
+        MDC.remove(Logback.mdcTraceKey)
+        MDC.remove(Logback.mdcSpanKey)
       }
     } else {
       pjp.proceed()
     }
   }
-}
-
-
-trait ContextAwareLoggingEvent {
-  def getContext: Context
-  def setContext(context:Context):Unit
 }
 
 object ContextAwareLoggingEvent  {

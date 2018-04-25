@@ -1,6 +1,6 @@
 /*
  * =========================================================================================
- * Copyright © 2013-2017 the kamon project <http://kamon.io/>
+ * Copyright © 2013-2018 the kamon project <http://kamon.io/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -19,7 +19,7 @@ package kamon.logback
 import com.typesafe.config.ConfigFactory
 import kamon.Kamon
 import kamon.context.Context
-import kamon.logback.instrumentation.AsyncAppenderInstrumentation
+import kamon.logback.instrumentation.Logback
 import kamon.trace.Span
 import org.scalatest._
 import org.scalatest.concurrent.Eventually
@@ -53,7 +53,7 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
       }
 
       "MDC context" in {
-        val memoryAppender = buildMemoryAppender(configurator,s"%X{${AsyncAppenderInstrumentation.mdcTraceKey}} %X{${AsyncAppenderInstrumentation.mdcSpanKey}} %X{mdc_key}")
+        val memoryAppender = buildMemoryAppender(configurator,s"%X{${Logback.mdcTraceKey}} %X{${Logback.mdcSpanKey}} %X{mdc_key}")
 
         val span = Kamon.buildSpan("my-span").start()
         val traceID = span.context().traceID
@@ -66,8 +66,8 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
         }
 
         memoryAppender.getLastLine shouldBe traceID.string + " " + spanID.string + " mdc_value"
-        MDC.get(AsyncAppenderInstrumentation.mdcTraceKey) shouldBe null
-        MDC.get(AsyncAppenderInstrumentation.mdcSpanKey) shouldBe null
+        MDC.get(Logback.mdcTraceKey) shouldBe null
+        MDC.get(Logback.mdcSpanKey) shouldBe null
       }
 
       "disable MDC context" in {
@@ -78,7 +78,7 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
         )
 
 
-        val memoryAppender = buildMemoryAppender(configurator,s"%X{${AsyncAppenderInstrumentation.mdcTraceKey}}")
+        val memoryAppender = buildMemoryAppender(configurator,s"%X{${Logback.mdcTraceKey}}")
 
         val span = Kamon.buildSpan("my-span").start()
         val contextWithSpan = Context.create(Span.ContextKey, span)
