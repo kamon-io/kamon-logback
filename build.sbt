@@ -25,7 +25,7 @@ lazy val root = (project in file("."))
       name := "kamon-logback",
       scalaVersion := "2.12.5"))
   .enablePlugins(JavaAgent)
-  .settings(javaAgents += "io.kamon" % "kanela-agent" % "0.0.123" % "compile;runtime;test")
+  .settings(javaAgents += "io.kamon" % "kanela-agent" % "0.0.11" % "compile;runtime;test")
 //  .settings(javaAgents += "org.aspectj" % "aspectjweaver" % "1.9.1" % "compile;runtime;test")
   .settings(resolvers += Resolver.mavenLocal)
   .settings(
