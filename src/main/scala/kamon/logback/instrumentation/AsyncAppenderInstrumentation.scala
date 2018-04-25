@@ -19,16 +19,16 @@ package kamon.logback.instrumentation
 import java.util.concurrent.Callable
 
 import kamon.Kamon
-import kamon.agent.api.instrumentation.mixin.Initializer
-import kamon.agent.libs.net.bytebuddy.asm.Advice.{Argument, OnMethodExit}
-import kamon.agent.libs.net.bytebuddy.implementation.bind.annotation
-import kamon.agent.libs.net.bytebuddy.implementation.bind.annotation.{RuntimeType, SuperCall}
-import kamon.agent.scala.KamonInstrumentation
+import kanela.agent.api.instrumentation.mixin.Initializer
+import kanela.agent.libs.net.bytebuddy.asm.Advice.{Argument, OnMethodExit}
+import kanela.agent.libs.net.bytebuddy.implementation.bind.annotation
+import kanela.agent.libs.net.bytebuddy.implementation.bind.annotation.{RuntimeType, SuperCall}
 import kamon.context.Context
+import kanela.agent.scala.KanelaInstrumentation
 
 import scala.beans.BeanProperty
 
-class AsyncAppenderInstrumentation extends KamonInstrumentation {
+class AsyncAppenderInstrumentation extends KanelaInstrumentation {
 
   /**
     * Mix:
