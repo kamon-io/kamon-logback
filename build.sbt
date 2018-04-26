@@ -1,3 +1,5 @@
+
+
 /* =========================================================================================
  * Copyright © 2013-2017 the kamon project <http://kamon.io/>
  *
@@ -25,7 +27,7 @@ lazy val root = (project in file("."))
       name := "kamon-logback",
       scalaVersion := "2.12.5"))
   .enablePlugins(JavaAgent)
-  .settings(javaAgents += "io.kamon" % "kanela-agent" % "0.0.11" % "compile;runtime;test")
+  .settings(javaAgents ++= resolveAgent)
 //  .settings(javaAgents += "org.aspectj" % "aspectjweaver" % "1.9.1" % "compile;runtime;test")
   .settings(resolvers += Resolver.mavenLocal)
   .settings(
@@ -33,3 +35,11 @@ lazy val root = (project in file("."))
       compileScope(kamonCore, latestLogbackClassic, kanelaAgentExtension) ++
       providedScope(aspectJ) ++
       testScope(kamonTestkit, scalatest))
+
+def resolveAgent: Seq[ModuleID] = {
+  val agent = Option(System.getProperty("agent")).getOrElse("aspectj")
+  if(agent.equalsIgnoreCase("kanela"))
+    Seq("org.aspectj" % "aspectjweaver" % "1.9.1" % "compile", "io.kamon" % "kanela-agent" % "0.0.11" % "compile;;runtime;test")
+  else
+    Seq("org.aspectj" % "aspectjweaver" % "1.9.1" % "compile;runtime;test", "io.kamon" % "kanela-agent" % "0.0.11" % "compile")
+}
