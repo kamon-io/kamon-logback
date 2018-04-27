@@ -1,7 +1,5 @@
-
-
 /* =========================================================================================
- * Copyright © 2013-2017 the kamon project <http://kamon.io/>
+ * Copyright © 2013-2018 the kamon project <http://kamon.io/>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License. You may obtain a copy of the License at
@@ -15,10 +13,11 @@
  * =========================================================================================
  */
 
-val kamonCore             = "io.kamon"        %%  "kamon-core"      % "1.0.0"
-val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"   % "1.0.0"
-val kanelaAgentExtension  = "io.kamon"        %%  "kanela-scala-extension"  % "0.0.10"
-val latestLogbackClassic  = "ch.qos.logback"  %   "logback-classic" % "1.2.3"
+val kamonCore             = "io.kamon"        %%  "kamon-core"              % "1.0.0"
+val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"           % "1.0.0"
+val kanelaScalaExtension  = "io.kamon"        %%  "kanela-scala-extension"  % "0.0.10"
+
+val latestLogbackClassic  = "ch.qos.logback"  %   "logback-classic"         % "1.2.3"
 
 resolvers += Resolver.bintrayRepo("kamon-io", "snapshots")
 
@@ -28,18 +27,15 @@ lazy val root = (project in file("."))
       scalaVersion := "2.12.5"))
   .enablePlugins(JavaAgent)
   .settings(javaAgents ++= resolveAgent)
-//  .settings(javaAgents += "org.aspectj" % "aspectjweaver" % "1.9.1" % "compile;runtime;test")
-  .settings(resolvers += Resolver.mavenLocal)
   .settings(
     libraryDependencies ++=
-      compileScope(kamonCore, latestLogbackClassic, kanelaAgentExtension) ++
-      providedScope(aspectJ) ++
+      compileScope(kamonCore, latestLogbackClassic, kanelaScalaExtension) ++
       testScope(kamonTestkit, scalatest))
 
 def resolveAgent: Seq[ModuleID] = {
   val agent = Option(System.getProperty("agent")).getOrElse("aspectj")
   if(agent.equalsIgnoreCase("kanela"))
-    Seq("org.aspectj" % "aspectjweaver" % "1.9.1" % "compile", "io.kamon" % "kanela-agent" % "0.0.11" % "compile;;runtime;test")
+    Seq("org.aspectj" % "aspectjweaver" % "1.9.1" % "compile", "io.kamon" % "kanela-agent" % "0.0.11" % "compile;test")
   else
-    Seq("org.aspectj" % "aspectjweaver" % "1.9.1" % "compile;runtime;test", "io.kamon" % "kanela-agent" % "0.0.11" % "compile")
+    Seq("org.aspectj" % "aspectjweaver" % "1.9.1" % "compile;test", "io.kamon" % "kanela-agent" % "0.0.11" % "compile")
 }
