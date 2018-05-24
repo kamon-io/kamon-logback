@@ -14,7 +14,7 @@
  * =========================================================================================
  */
 
-package kamon.logback.instrumentation.kenela
+package kamon.logback.instrumentation.kanela
 
 import java.util.concurrent.Callable
 
