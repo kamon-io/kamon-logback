@@ -63,7 +63,7 @@ class AsyncAppenderInstrumentation extends KanelaInstrumentation {
     */
   forTargetType("ch.qos.logback.core.spi.AppenderAttachableImpl") { builder =>
     builder
-      .withInterceptorFor(method("appendLoopOnAppenders"), classOf[AppendLoopMethodInterceptor])
+      .withInterceptorFor(method("appendLoopOnAppenders"), AppendLoopMethodInterceptor)
       .build()
   }
 
@@ -74,7 +74,7 @@ class AsyncAppenderInstrumentation extends KanelaInstrumentation {
     */
   forTargetType("ch.qos.logback.classic.util.LogbackMDCAdapter") { builder =>
     builder
-      .withInterceptorFor(method("getPropertyMap"), classOf[GetPropertyMapMethodInterceptor])
+      .withInterceptorFor(method("getPropertyMap"), GetPropertyMapMethodInterceptor)
       .build()
   }
 }
@@ -93,7 +93,6 @@ object AppendMethodAdvisor {
 /**
   * Interceptor for ch.qos.logback.core.spi.AppenderAttachableImpl::appendLoopOnAppenders
   */
-class AppendLoopMethodInterceptor
 object AppendLoopMethodInterceptor {
 
   @RuntimeType
@@ -104,7 +103,6 @@ object AppendLoopMethodInterceptor {
 /**
   * Interceptor for ch.qos.logback.classic.util.LogbackMDCAdapter::getPropertyMap
   */
-class GetPropertyMapMethodInterceptor
 object GetPropertyMapMethodInterceptor {
 
   @RuntimeType
