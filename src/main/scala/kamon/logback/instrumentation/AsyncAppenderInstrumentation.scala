@@ -19,11 +19,12 @@ package kamon.logback.instrumentation
 
 import com.typesafe.config.Config
 import kamon.{Kamon, OnReconfigureHook}
-import kamon.context.Context
+import kamon.context.{Context, Key}
 import kamon.trace.{IdentityProvider, Span}
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation._
 import org.slf4j.MDC
+import scala.collection.JavaConverters._
 
 import scala.beans.BeanProperty
 
@@ -32,10 +33,12 @@ object AsyncAppenderInstrumentation {
   @volatile private var _mdcContextPropagation: Boolean = true
   @volatile private var _mdcTraceKey: String = "kamonTraceID"
   @volatile private var _mdcSpanKey: String = "kamonSpanID"
+  @volatile private var _mdcTracedKeys: Set[String] = Set.empty[String]
 
   def mdcTraceKey: String = _mdcTraceKey
   def mdcSpanKey: String = _mdcSpanKey
   def mdcContextPropagation: Boolean = _mdcContextPropagation
+  def mdcTracedKeys: Set[String] = _mdcTracedKeys
 
   loadConfiguration(Kamon.config())
 
@@ -50,6 +53,7 @@ object AsyncAppenderInstrumentation {
     _mdcContextPropagation = logbackConfig.getBoolean("mdc-context-propagation")
     _mdcTraceKey = logbackConfig.getString("mdc-trace-id-key")
     _mdcSpanKey = logbackConfig.getString("mdc-span-id-key")
+    _mdcTracedKeys = logbackConfig.getStringList("mdc-traced-context-keys").asScala.toSet
   }
 }
 @Aspect
@@ -70,16 +74,23 @@ class AsyncAppenderInstrumentation {
   @Around("execution(* ch.qos.logback.classic.util.LogbackMDCAdapter.getPropertyMap())")
   def aroundGetMDCPropertyMap(pjp: ProceedingJoinPoint): Any = {
 
-    val context = Kamon.currentContext().get(Span.ContextKey)
+    val currentContext = Kamon.currentContext()
+    val span = currentContext.get(Span.ContextKey)
 
-    if (context.context().traceID != IdentityProvider.NoIdentifier && AsyncAppenderInstrumentation.mdcContextPropagation){
-      MDC.put(AsyncAppenderInstrumentation.mdcTraceKey, context.context().traceID.string)
-      MDC.put(AsyncAppenderInstrumentation.mdcSpanKey, context.context().spanID.string)
+    if (span.context().traceID != IdentityProvider.NoIdentifier && AsyncAppenderInstrumentation.mdcContextPropagation){
+      AsyncAppenderInstrumentation.mdcTracedKeys.foreach { tracedkey =>
+        currentContext.get(Key.broadcastString(tracedkey)).foreach { tracedKeyValue =>
+          MDC.put(tracedkey, tracedKeyValue)
+        }
+      }
+      MDC.put(AsyncAppenderInstrumentation.mdcTraceKey, span.context().traceID.string)
+      MDC.put(AsyncAppenderInstrumentation.mdcSpanKey, span.context().spanID.string)
       try {
         pjp.proceed()
       } finally {
         MDC.remove(AsyncAppenderInstrumentation.mdcTraceKey)
         MDC.remove(AsyncAppenderInstrumentation.mdcSpanKey)
+        AsyncAppenderInstrumentation.mdcTracedKeys.foreach(MDC.remove)
       }
     } else {
       pjp.proceed()
