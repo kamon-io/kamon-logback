@@ -73,7 +73,7 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
       "report the custom MDC keys in the context" in {
         Kamon.reconfigure(
           ConfigFactory
-            .parseString("kamon.logback.mdc-traced-context-keys = [ testKey1, testKey2 ]")
+            .parseString("kamon.logback.mdc-traced-broadcast-keys = [ testKey1, testKey2 ]")
             .withFallback(ConfigFactory.defaultReference()))
         val memoryAppender = buildMemoryAppender(configurator, "%X{testKey1} %X{testKey2}")
 
@@ -93,7 +93,7 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
       "report empty if custom MDC keys are configured, but not provided" in {
         Kamon.reconfigure(
           ConfigFactory
-            .parseString("kamon.logback.mdc-traced-context-keys = [ testKey1, testKey2 ]")
+            .parseString("kamon.logback.mdc-traced-broadcast-keys = [ testKey1, testKey2 ]")
             .withFallback(ConfigFactory.defaultReference()))
         val memoryAppender = buildMemoryAppender(configurator, "%X{testKey1} %X{testKey2}")
 

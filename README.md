@@ -62,11 +62,18 @@ If you choose to use [`AsyncAppender`](https://logback.qos.ch/manual/appenders.h
  <pattern>%d{yyyy-MM-dd HH:mm:ss} | %-5level | %X{kamonTraceID} | %X{kamonSpanID} | %c{0} -> %m%n</pattern>
 ```
 
-You can also add custom values to MDC. To do this, simply add the key value in the library configuration: `kamon.logback.mdc-traced-context-keys = [ userID ]`. Then, add the value to the kamon context:
+You can also add custom values to MDC. To do this, simply add the key value in the library configuration: 
+```
+kamon.logback.mdc-traced-local-keys = [ userID ].
+kamon.logback.mdc-traced-broadcast-keys = [ requestID ]
+``` 
+
+Then, add the value to the kamon context:
 ```
 Context
   .create(Span.ContextKey, span)
-  .withKey(Key.broadcastString("userID"), Some("user-1")) {
-  // loggers called in this context will have access to the user ID
+  .withKey(Key.broadcastString("userID"), Some("user-1"))
+  .withKey(Key.local[Option[String]("requestID", None), Some("request-id") {
+  // loggers called in this context will have access to the userID, requestID
 }
 ```
