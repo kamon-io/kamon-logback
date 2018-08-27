@@ -77,3 +77,5 @@ Context
   // loggers called in this context will have access to the userID, requestID
 }
 ```
+
+Note: While in Kamon you can have one local key and one broadcast key with the same name, in MDC this is not possible. In this case only the broadcast key will be stored in MDC (will be present in the logs) 
