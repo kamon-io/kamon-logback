@@ -23,7 +23,8 @@ import kamon.context.Context
 import kamon.logback.instrumentation.{ContextAwareLoggingEvent, Logback}
 import kamon.trace.{IdentityProvider, Span}
 import kanela.agent.api.instrumentation.mixin.Initializer
-import kanela.agent.libs.net.bytebuddy.asm.Advice.{Argument, OnMethodExit}
+import kanela.agent.libs.net.bytebuddy.asm.Advice
+import kanela.agent.libs.net.bytebuddy.asm.Advice.Argument
 import kanela.agent.libs.net.bytebuddy.implementation.bind.annotation
 import kanela.agent.libs.net.bytebuddy.implementation.bind.annotation.{RuntimeType, SuperCall}
 import kanela.agent.scala.KanelaInstrumentation
@@ -85,9 +86,11 @@ class AsyncAppenderInstrumentation extends KanelaInstrumentation {
 class AppendMethodAdvisor
 object AppendMethodAdvisor {
 
-  @OnMethodExit
-  def onExit(@Argument(0) event:AnyRef): Unit =
-    event.asInstanceOf[ContextAwareLoggingEvent].setContext(Kamon.currentContext())
+  @Advice.OnMethodExit(onThrowable = classOf[Throwable], suppress = classOf[Throwable])
+  def onExit(@Argument(0) event:AnyRef): Unit = {
+    if(event.isInstanceOf[ContextAwareLoggingEvent])
+      event.asInstanceOf[ContextAwareLoggingEvent].setContext(Kamon.currentContext())
+  }
 }
 
 /**
