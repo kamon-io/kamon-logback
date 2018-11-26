@@ -1,3 +1,4 @@
+
 /* =========================================================================================
  * Copyright © 2013-2017 the kamon project <http://kamon.io/>
  *
@@ -22,8 +23,9 @@ resolvers += Resolver.bintrayRepo("kamon-io", "snapshots")
 lazy val root = (project in file("."))
   .settings(Seq(
       name := "kamon-logback",
-      scalaVersion := "2.12.6"))
-  .settings(aspectJSettings: _*)
+      scalaVersion := "2.12.6"),
+     crossScalaVersions := Seq("2.12.7")
+  )
   .settings(
     libraryDependencies ++=
       compileScope(kamonCore, latestLogbackClassic) ++
