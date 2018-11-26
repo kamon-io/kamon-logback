@@ -23,9 +23,8 @@ resolvers += Resolver.bintrayRepo("kamon-io", "snapshots")
 lazy val root = (project in file("."))
   .settings(Seq(
       name := "kamon-logback",
-      scalaVersion := "2.12.6"),
-     crossScalaVersions := Seq("2.12.7")
-  )
+      scalaVersion := "2.12.6"))
+  .settings(aspectJSettings: _*)
   .settings(
     libraryDependencies ++=
       compileScope(kamonCore, latestLogbackClassic) ++
