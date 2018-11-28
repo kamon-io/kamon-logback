@@ -37,9 +37,9 @@ class AsyncAppenderInstrumentation extends KanelaInstrumentation {
   /**
     * Mix:
     *
-    * ch.qos.logback.classic.spi.ILoggingEvent with kamon.logback.mixin.ContextAwareLoggingEvent
+    * ch.qos.logback.core.spi.DeferredProcessingAware with kamon.logback.mixin.ContextAwareLoggingEvent
     */
-  forSubtypeOf("ch.qos.logback.classic.spi.ILoggingEvent") { builder =>
+  forSubtypeOf("ch.qos.logback.core.spi.DeferredProcessingAware") { builder =>
     builder
       .withMixin(classOf[ContextAwareLoggingEventMixin])
       .build()
@@ -87,10 +87,8 @@ class AppendMethodAdvisor
 object AppendMethodAdvisor {
 
   @Advice.OnMethodExit(onThrowable = classOf[Throwable], suppress = classOf[Throwable])
-  def onExit(@Argument(0) event:AnyRef): Unit = {
-    if(event.isInstanceOf[ContextAwareLoggingEvent])
-      event.asInstanceOf[ContextAwareLoggingEvent].setContext(Kamon.currentContext())
-  }
+  def onExit(@Argument(0) event:AnyRef): Unit =
+    event.asInstanceOf[ContextAwareLoggingEvent].setContext(Kamon.currentContext())
 }
 
 /**
