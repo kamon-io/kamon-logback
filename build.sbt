@@ -13,8 +13,8 @@
  * =========================================================================================
  */
 
-val kamonCore             = "io.kamon"        %%  "kamon-core"              % "1.1.2"
-val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"           % "1.1.2"
+val kamonCore             = "io.kamon"        %%  "kamon-core"              % "1.2.0-M1"
+val kamonTestkit          = "io.kamon"        %%  "kamon-testkit"           % "1.2.0-M1"
 val kanelaScalaExtension  = "io.kamon"        %%  "kanela-scala-extension"  % "0.0.10"
 
 val logbackClassic  = "ch.qos.logback"  %   "logback-classic"    % "1.2.3"
@@ -24,7 +24,7 @@ resolvers += Resolver.bintrayRepo("kamon-io", "snapshots")
 lazy val root = (project in file("."))
   .settings(Seq(
       name := "kamon-logback",
-      scalaVersion := "2.12.5"))
+      scalaVersion := "2.12.8"))
   .enablePlugins(JavaAgent)
   .settings(javaAgents ++= resolveAgent)
   .settings(
