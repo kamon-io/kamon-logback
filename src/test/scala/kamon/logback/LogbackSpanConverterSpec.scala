@@ -70,6 +70,46 @@ class LogbackSpanConverterSpec extends WordSpec with Matchers with Eventually {
         MDC.get(Logback.mdcSpanKey) shouldBe null
       }
 
+      "report the custom MDC keys in the context" in {
+        Kamon.reconfigure(
+          ConfigFactory
+            .parseString("kamon.logback.mdc-traced-keys = [ testKey1, testKey2 ]")
+            .withFallback(ConfigFactory.defaultReference()))
+        val memoryAppender = buildMemoryAppender(configurator, "%X{testKey1} %X{testKey2}")
+
+        val span = Kamon.buildSpan("my-span").start()
+
+        val contextWithSpan = Context
+          .of(Span.ContextKey, span)
+          .withKey(Context.key[Option[String]]("testKey1", None), Some("testKey1Value"))
+          .withKey(Context.key[Option[String]]("testKey2", None), Some("testKey2Value"))
+
+        Kamon.withContext(contextWithSpan) {
+          memoryAppender.doAppend(createLoggingEvent(context))
+        }
+
+        memoryAppender.getLastLine shouldBe "testKey1Value testKey2Value"
+      }
+
+      "report empty if custom MDC keys are configured, but not provided" in {
+        Kamon.reconfigure(
+          ConfigFactory
+            .parseString("kamon.logback.mdc-traced-broadcast-keys = [ testKey1, testKey2 ]")
+            .withFallback(ConfigFactory.defaultReference()))
+        val memoryAppender = buildMemoryAppender(configurator, "%X{testKey1} %X{testKey2}")
+
+        val span = Kamon.buildSpan("my-span").start()
+        val contextWithSpan = Context
+          .of(Span.ContextKey, span)
+
+        Kamon.withContext(contextWithSpan) {
+          memoryAppender.doAppend(createLoggingEvent(context))
+        }
+
+        memoryAppender.getLastLine shouldBe " "
+      }
+
+
       "disable MDC context" in {
         Kamon.reconfigure(
           ConfigFactory

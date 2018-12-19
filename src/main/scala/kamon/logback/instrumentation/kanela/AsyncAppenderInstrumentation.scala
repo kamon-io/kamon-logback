@@ -108,16 +108,23 @@ object GetPropertyMapMethodInterceptor {
 
   @RuntimeType
   def aroundGetMDCPropertyMap(@SuperCall callable: Callable[_]): Any = {
-    val context = Kamon.currentContext().get(Span.ContextKey)
+    val currentContext = Kamon.currentContext()
+    val span = currentContext.get(Span.ContextKey)
 
-    if (context.context().traceID != IdentityProvider.NoIdentifier && Logback.mdcContextPropagation){
-      MDC.put(Logback.mdcTraceKey, context.context().traceID.string)
-      MDC.put(Logback.mdcSpanKey, context.context().spanID.string)
-      try {
-        callable.call()
-      } finally {
+    if (span.context().traceID != IdentityProvider.NoIdentifier && Logback.mdcContextPropagation){
+      MDC.put(Logback.mdcTraceKey, span.context().traceID.string)
+      MDC.put(Logback.mdcSpanKey, span.context().spanID.string)
+
+      Logback.mdcKeys.foreach { key =>
+        currentContext.get(key).foreach { localKeyValue =>
+          MDC.put(key.name, localKeyValue)
+        }
+      }
+
+      try callable.call() finally {
         MDC.remove(Logback.mdcTraceKey)
         MDC.remove(Logback.mdcSpanKey)
+        Logback.mdcKeys.foreach(key => MDC.remove(key.name))
       }
     } else {
       callable.call()
