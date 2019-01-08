@@ -62,20 +62,50 @@ If you choose to use [`AsyncAppender`](https://logback.qos.ch/manual/appenders.h
  <pattern>%d{yyyy-MM-dd HH:mm:ss} | %-5level | %X{kamonTraceID} | %X{kamonSpanID} | %c{0} -> %m%n</pattern>
 ```
 
+Here is a simple example `logback.xml` configuration that does this:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false" debug="false">
+  <conversionRule conversionWord="traceID" converterClass="kamon.logback.LogbackTraceIDConverter" />
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss} | %-5level | %traceID | %X{userID} | %c{0} -> %m%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="CONSOLE" />
+  </appender>
+
+  <root level="DEBUG">
+    <appender-ref ref="ASYNC" />
+  </root>
+</configuration>
+```
+
 You can also add custom values to MDC. To do this, simply add the key value in the library configuration: 
 ```
-kamon.logback.mdc-traced-local-keys = [ userID ].
-kamon.logback.mdc-traced-broadcast-keys = [ requestID ]
-``` 
+kamon.logback.mdc-traced-local-keys = [ "userID" ]
+kamon.logback.mdc-traced-broadcast-keys = [ "requestID" ]
+```
 
 Then, add the value to the kamon context:
 ```
-Context
-  .create(Span.ContextKey, span)
-  .withKey(Key.broadcastString("userID"), Some("user-1"))
-  .withKey(Key.local[Option[String]("requestID", None), Some("request-id") {
+Kamon.withContext(
+  Context
+    .create(Span.ContextKey, Kamon.buildSpan("span").start())
+    .withKey(Key.broadcastString("userID"), Some("user-1"))
+    .withKey(Key.local[Option[String]]("requestID", None), Some("request-id"))) {
   // loggers called in this context will have access to the userID, requestID
 }
 ```
+
+You can turn off MDC context propogation via the following in the library configuration:
+```
+kamon.logback.mdc-context-propagation = false
+```
+
 
 Note: While in Kamon you can have one local key and one broadcast key with the same name, in MDC this is not possible. In this case only the broadcast key will be stored in MDC (will be present in the logs) 
