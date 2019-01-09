@@ -116,9 +116,12 @@ object GetPropertyMapMethodInterceptor {
       MDC.put(Logback.mdcSpanKey, span.context().spanID.string)
 
       Logback.mdcKeys.foreach { key =>
-        currentContext.get(key).foreach { localKeyValue =>
-          MDC.put(key.name, localKeyValue)
+        val localKeyValue = currentContext.get(key) match {
+          case Some(value)  => value.toString
+          case anyOther     => if(anyOther != null) anyOther.toString else null
         }
+
+        MDC.put(key.name, localKeyValue)
       }
 
       try callable.call() finally {
